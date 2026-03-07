@@ -1,0 +1,369 @@
+/* Markdown Viewer Styles */
+
+:root {
+    color-scheme: light;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f6f8fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+}
+
+.container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    padding: 16px 0;
+    border-bottom: 1px solid #d0d7de;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f2328;
+}
+
+.markdown-body {
+    background-color: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    color: #1f2328;
+}
+
+/* Ensure all text elements are dark */
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+    color: #1f2328 !important;
+}
+
+.markdown-body p,
+.markdown-body li,
+.markdown-body td,
+.markdown-body th,
+.markdown-body div:not(.mermaid-wrapper):not(.highlight),
+.markdown-body strong,
+.markdown-body em {
+    color: #24292f !important;
+}
+
+.markdown-body a {
+    color: #0969da !important;
+}
+
+.markdown-body a:hover {
+    color: #0550ae !important;
+}
+
+.markdown-body blockquote {
+    color: #57606a !important;
+    border-left-color: #d0d7de !important;
+}
+
+.markdown-body blockquote p {
+    color: #57606a !important;
+}
+
+.markdown-body code {
+    color: #24292f;
+}
+
+/* Inline code */
+.markdown-body p > code,
+.markdown-body li > code,
+.markdown-body td > code {
+    background-color: rgba(175, 184, 193, 0.2);
+    padding: 0.2em 0.4em;
+    border-radius: 6px;
+    font-size: 85%;
+    color: #24292f;
+}
+
+.markdown-body pre {
+    color: #24292f;
+}
+
+/* Mermaid Diagram Styles */
+.mermaid {
+    background-color: #ffffff !important;
+    text-align: center;
+}
+
+/* Dark text for all Mermaid elements */
+.mermaid svg text,
+.mermaid svg .label,
+.mermaid svg .nodeLabel,
+.mermaid svg .edgeLabel,
+.mermaid svg .cluster-label,
+.mermaid svg .actor,
+.mermaid svg .note {
+    fill: #1f2328 !important;
+    color: #1f2328 !important;
+}
+
+/* Sequence diagram specific styles */
+.mermaid svg .actor,
+.mermaid svg rect.actor,
+.mermaid svg g.actor rect {
+    fill: #e1f5fe !important;
+    stroke: #0288d1 !important;
+}
+
+.mermaid svg .actor text,
+.mermaid svg rect.actor + text,
+.mermaid svg g.actor text {
+    fill: #1f2328 !important;
+}
+
+/* Sequence number circles */
+.mermaid svg .sequenceNumber {
+    fill: #1f2328 !important;
+}
+
+/* Signal/message lines and text */
+.mermaid svg .messageLine0,
+.mermaid svg .messageLine1,
+.mermaid svg .messageLine2 {
+    stroke: #57606a !important;
+}
+
+.mermaid svg .messageText {
+    fill: #24292f !important;
+}
+
+/* Note boxes */
+.mermaid svg .note,
+.mermaid svg rect.note,
+.mermaid svg g.note rect {
+    fill: #f6f8fa !important;
+    stroke: #d0d7de !important;
+}
+
+/* Loop boxes */
+.mermaid svg .labelBox,
+.mermaid svg rect.labelBox {
+    fill: #ffffff !important;
+    stroke: #57606a !important;
+}
+
+/* Activation boxes */
+.mermaid svg .activation0,
+.mermaid svg .activation1,
+.mermaid svg .activation2 {
+    fill: #e1f5fe !important;
+    stroke: #0288d1 !important;
+}
+
+/* Lifeline */
+.mermaid svg .loopLine {
+    stroke: #57606a !important;
+}
+
+/* Ensure all rect elements in sequence diagrams have proper fills */
+.mermaid svg g > rect:not([fill="none"]):not([fill="#ffffff"]):not([fill="#fff"]):not([fill="white"]) {
+    fill: #e1f5fe !important;
+}
+
+.mermaid svg .edgeLabel,
+.mermaid svg .edgeLabel rect {
+    fill: #ffffff !important;
+}
+
+.mermaid svg .edgeLabel span {
+    color: #1f2328 !important;
+}
+
+.mermaid-container {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    margin: 16px 0;
+    overflow: hidden;
+}
+
+.mermaid-wrapper {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-wrapper svg {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+}
+
+/* Zoom buttons (used in fullscreen mode) */
+.zoom-btn {
+    background-color: #24292f !important;
+    border: 2px solid #24292f !important;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 36px;
+    color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: auto;
+    z-index: 100;
+}
+
+.zoom-btn:hover {
+    background-color: #1f2328 !important;
+    border-color: #1f2328 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.zoom-btn:active {
+    background-color: #57606a !important;
+    border-color: #57606a;
+    color: #ffffff;
+}
+
+.zoom-btn.return {
+    padding: 6px 12px;
+}
+
+/* Code blocks */
+.markdown-body pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+}
+
+/* Codehilite / Pygments highlighting */
+.markdown-body .highlight {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+}
+
+.markdown-body .highlight pre {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.markdown-body .highlight code {
+    color: #24292f;
+    background-color: transparent;
+}
+
+.markdown-body code {
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 14px;
+}
+
+/* Tables */
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+    border: 1px solid #d0d7de;
+    padding: 8px 12px;
+}
+
+.markdown-body table th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+}
+
+/* Scrollbar styling */
+.mermaid-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.mermaid-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.mermaid-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.mermaid-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Fullscreen Mermaid Diagram */
+.mermaid-fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mermaid-fullscreen-container {
+    position: relative;
+    width: calc(100vw - 40px);
+    height: calc(100vh - 40px);
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mermaid-fullscreen-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+.mermaid-fullscreen-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #24292f;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+}
+
+.mermaid-fullscreen-close:hover {
+    background-color: #cf222e;
+}
