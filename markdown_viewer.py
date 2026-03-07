@@ -10,7 +10,9 @@
 """Markdown Viewer with Mermaid Diagram Support."""
 
 import argparse
+import html
 import json
+import mimetypes
 import re
 import sys
 import threading
@@ -29,11 +31,37 @@ markdown_file: Path = None
 templates_dir = Path(__file__).parent / "templates"
 jinja_env = Environment(loader=FileSystemLoader(templates_dir))
 
+# Create a single Markdown instance to reuse across requests
+_md_instance = None
+
+
+def get_markdown_instance():
+    """Get or create a cached Markdown instance."""
+    global _md_instance
+    if _md_instance is None:
+        _md_instance = markdown.Markdown(
+            extensions=[
+                MermaidExtension(),
+                "fenced_code",
+                "codehilite",
+                "tables",
+                "toc",
+                "nl2br",
+            ],
+            extension_configs={
+                "codehilite": {
+                    "css_class": "highlight",
+                    "guess_lang": False,
+                }
+            }
+        )
+    return _md_instance
+
 
 class MermaidPreprocessor(markdown.preprocessors.Preprocessor):
     """Preprocessor to preserve mermaid code blocks before other processing."""
 
-    MERMADE_BLOCK_PATTERN = re.compile(
+    MERMAID_BLOCK_PATTERN = re.compile(
         r'^```mermaid\s*\n(.*?)\n```\s*$',
         re.MULTILINE | re.DOTALL
     )
@@ -44,10 +72,10 @@ class MermaidPreprocessor(markdown.preprocessors.Preprocessor):
         def replace_mermaid(match):
             code = match.group(1)
             # Escape HTML entities in the code
-            code = code.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            code = html.escape(code)
             return f'<div class="mermaid-block"><pre class="mermaid"><code>{code}</code></pre></div>'
 
-        text = self.MERMADE_BLOCK_PATTERN.sub(replace_mermaid, text)
+        text = self.MERMAID_BLOCK_PATTERN.sub(replace_mermaid, text)
         return text.split('\n')
 
 
@@ -64,22 +92,8 @@ def makeExtension(**kwargs):
 
 def render_markdown(content: str) -> str:
     """Render markdown content to HTML with extensions."""
-    md = markdown.Markdown(
-        extensions=[
-            MermaidExtension(),
-            "fenced_code",
-            "codehilite",
-            "tables",
-            "toc",
-            "nl2br",
-        ],
-        extension_configs={
-            "codehilite": {
-                "css_class": "highlight",
-                "guess_lang": False,
-            }
-        }
-    )
+    md = get_markdown_instance()
+    md.reset()  # Reset state for reuse
     return md.convert(content)
 
 
@@ -109,25 +123,20 @@ class MarkdownViewerHandler(BaseHTTPRequestHandler):
 
     def send_static_file(self, filepath: Path):
         """Serve a static file."""
-        if not filepath.exists():
+        try:
+            content = filepath.read_bytes()
+        except FileNotFoundError:
             self.send_error(404, "File not found")
             return
 
-        # Determine content type based on extension
-        content_types = {
-            ".css": "text/css",
-            ".js": "application/javascript",
-            ".html": "text/html",
-            ".png": "image/png",
-            ".jpg": "image/jpeg",
-            ".svg": "image/svg+xml",
-        }
-        content_type = content_types.get(filepath.suffix, "application/octet-stream")
+        content_type, _ = mimetypes.guess_type(filepath.name)
+        if content_type is None:
+            content_type = "application/octet-stream"
 
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.end_headers()
-        self.wfile.write(filepath.read_bytes())
+        self.wfile.write(content)
 
     def do_GET(self):
         """Handle GET requests."""
@@ -137,13 +146,19 @@ class MarkdownViewerHandler(BaseHTTPRequestHandler):
 
         # Route: /content - API endpoint for raw markdown content
         if path == "/content":
-            if markdown_file is None or not markdown_file.exists():
+            if markdown_file is None:
+                self.send_json({"error": "Markdown file not found"}, 404)
+                return
+
+            try:
+                content = markdown_file.read_text(encoding="utf-8")
+            except FileNotFoundError:
                 self.send_json({"error": "Markdown file not found"}, 404)
                 return
 
             self.send_json({
                 "filename": markdown_file.name,
-                "content": markdown_file.read_text(encoding="utf-8"),
+                "content": content,
             })
             return
 
@@ -166,12 +181,16 @@ class MarkdownViewerHandler(BaseHTTPRequestHandler):
 
         # Route: / - Main viewer page
         if path == "/" or path == "":
-            if markdown_file is None or not markdown_file.exists():
+            if markdown_file is None:
                 self.send_html("<h1>404 - Markdown file not found</h1>", 404)
                 return
 
-            # Read and render markdown
-            content = markdown_file.read_text(encoding="utf-8")
+            try:
+                content = markdown_file.read_text(encoding="utf-8")
+            except FileNotFoundError:
+                self.send_html("<h1>404 - Markdown file not found</h1>", 404)
+                return
+
             rendered_content = render_markdown(content)
 
             # Render template

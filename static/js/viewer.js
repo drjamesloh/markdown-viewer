@@ -65,26 +65,25 @@
         processMermaidDiagrams();
     });
 
-    // Process all Mermaid diagrams
+    // Process all Mermaid diagrams in parallel
     async function processMermaidDiagrams() {
         const mermaidBlocks = document.querySelectorAll('.mermaid-block pre.mermaid code');
 
-        for (let i = 0; i < mermaidBlocks.length; i++) {
-            const block = mermaidBlocks[i];
+        const renderPromises = Array.from(mermaidBlocks).map((block, i) => {
             const code = block.textContent;
             const containerToReplace = block.closest('.mermaid-block');
 
-            try {
-                await renderMermaidDiagram(code, containerToReplace, i);
-            } catch (error) {
+            return renderMermaidDiagram(code, containerToReplace, i).catch(error => {
                 console.error('Mermaid rendering error:', error);
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'mermaid-error';
                 errorDiv.style.cssText = 'color: #cf222e; padding: 16px; border: 1px solid #cf222e; border-radius: 6px; background: #ffebe9;';
                 errorDiv.innerHTML = '<strong>Mermaid Error:</strong> ' + error.message;
                 containerToReplace.parentNode.replaceChild(errorDiv, containerToReplace);
-            }
-        }
+            });
+        });
+
+        await Promise.all(renderPromises);
     }
 
     async function renderMermaidDiagram(code, containerToReplace, index) {
@@ -201,8 +200,22 @@
             }
         });
 
-        // Close function
+        // Keydown handler - store reference for cleanup
+        function keyHandler(e) {
+            if (e.key === 'Escape') {
+                closeFullscreen();
+            } else if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                if (fullscreenPanZoom) fullscreenPanZoom.zoomIn();
+            } else if (e.key === '-') {
+                e.preventDefault();
+                if (fullscreenPanZoom) fullscreenPanZoom.zoomOut();
+            }
+        }
+
+        // Close function - always removes the keydown listener
         function closeFullscreen() {
+            document.removeEventListener('keydown', keyHandler);
             if (fullscreenPanZoom) {
                 fullscreenPanZoom.destroy();
             }
@@ -219,17 +232,6 @@
             }
         });
 
-        document.addEventListener('keydown', function keyHandler(e) {
-            if (e.key === 'Escape') {
-                closeFullscreen();
-                document.removeEventListener('keydown', keyHandler);
-            } else if (e.key === '+' || e.key === '=') {
-                e.preventDefault();
-                if (fullscreenPanZoom) fullscreenPanZoom.zoomIn();
-            } else if (e.key === '-') {
-                e.preventDefault();
-                if (fullscreenPanZoom) fullscreenPanZoom.zoomOut();
-            }
-        });
+        document.addEventListener('keydown', keyHandler);
     }
 })();
