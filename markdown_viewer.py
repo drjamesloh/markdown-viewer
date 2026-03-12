@@ -3,7 +3,8 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #     "jinja2",
-#     "markdown",
+#     "markdown-it-py",
+#     "mdit-py-plugins",
 #     "pygments",
 # ]
 # ///
@@ -13,7 +14,6 @@ import argparse
 import html
 import json
 import mimetypes
-import re
 import sys
 import threading
 import webbrowser
@@ -21,7 +21,11 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import unquote
 
-import markdown
+from markdown_it import MarkdownIt
+from mdit_py_plugins.front_matter import front_matter_plugin
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name, TextLexer
+from pygments.formatters import HtmlFormatter
 from jinja2 import Environment, FileSystemLoader
 
 # Global variable to store the markdown file path
@@ -35,66 +39,39 @@ jinja_env = Environment(loader=FileSystemLoader(templates_dir))
 _md_instance = None
 
 
+def highlight_code(code: str, lang: str, attrs: str) -> str:
+    """Highlight code using Pygments, with special handling for mermaid diagrams."""
+    if lang == "mermaid":
+        # Return mermaid code in the structure expected by viewer.js
+        escaped_code = html.escape(code)
+        return f'<div class="mermaid-block"><pre class="mermaid"><code>{escaped_code}</code></pre></div>'
+
+    if lang:
+        try:
+            lexer = get_lexer_by_name(lang, stripall=True)
+        except Exception:
+            lexer = TextLexer()
+    else:
+        lexer = TextLexer()
+
+    formatter = HtmlFormatter(css_class="highlight")
+    return highlight(code, lexer, formatter)
+
+
 def get_markdown_instance():
     """Get or create a cached Markdown instance."""
     global _md_instance
     if _md_instance is None:
-        _md_instance = markdown.Markdown(
-            extensions=[
-                MermaidExtension(),
-                "fenced_code",
-                "codehilite",
-                "tables",
-                "toc",
-                "nl2br",
-            ],
-            extension_configs={
-                "codehilite": {
-                    "css_class": "highlight",
-                    "guess_lang": False,
-                }
-            }
-        )
+        md = MarkdownIt("gfm-like", {"highlight": highlight_code, "linkify": False})
+        md.use(front_matter_plugin)
+        _md_instance = md
     return _md_instance
-
-
-class MermaidPreprocessor(markdown.preprocessors.Preprocessor):
-    """Preprocessor to preserve mermaid code blocks before other processing."""
-
-    MERMAID_BLOCK_PATTERN = re.compile(
-        r'^```mermaid\s*\n(.*?)\n```\s*$',
-        re.MULTILINE | re.DOTALL
-    )
-
-    def run(self, lines):
-        text = '\n'.join(lines)
-        # Replace mermaid blocks with a special placeholder
-        def replace_mermaid(match):
-            code = match.group(1)
-            # Escape HTML entities in the code
-            code = html.escape(code)
-            return f'<div class="mermaid-block"><pre class="mermaid"><code>{code}</code></pre></div>'
-
-        text = self.MERMAID_BLOCK_PATTERN.sub(replace_mermaid, text)
-        return text.split('\n')
-
-
-class MermaidExtension(markdown.extensions.Extension):
-    """Markdown extension for Mermaid diagram support."""
-
-    def extendMarkdown(self, md):
-        md.preprocessors.register(MermaidPreprocessor(md), 'mermaid', 175)
-
-
-def makeExtension(**kwargs):
-    return MermaidExtension(**kwargs)
 
 
 def render_markdown(content: str) -> str:
     """Render markdown content to HTML with extensions."""
     md = get_markdown_instance()
-    md.reset()  # Reset state for reuse
-    return md.convert(content)
+    return md.render(content)
 
 
 class MarkdownViewerHandler(BaseHTTPRequestHandler):

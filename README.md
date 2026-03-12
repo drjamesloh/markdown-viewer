@@ -66,7 +66,8 @@ Keyboard shortcuts in fullscreen mode:
 ## Dependencies
 
 - Python 3.10+
-- markdown
+- markdown-it-py
+- mdit-py-plugins
 - jinja2
 - pygments
 
