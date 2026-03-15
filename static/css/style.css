@@ -344,6 +344,47 @@ body {
     height: 100%;
 }
 
+/* Ensure consistent blue background for mermaid rect elements in fullscreen */
+.mermaid-fullscreen-container svg g > rect:not([fill="none"]):not([fill="#ffffff"]):not([fill="#fff"]):not([fill="white"]) {
+    fill: #e1f5fe !important;
+}
+
+/* Dark text for all Mermaid elements in fullscreen */
+.mermaid-fullscreen-container svg text,
+.mermaid-fullscreen-container svg .label,
+.mermaid-fullscreen-container svg .nodeLabel,
+.mermaid-fullscreen-container svg .edgeLabel,
+.mermaid-fullscreen-container svg .cluster-label,
+.mermaid-fullscreen-container svg .actor,
+.mermaid-fullscreen-container svg .note {
+    fill: #1f2328 !important;
+    color: #1f2328 !important;
+}
+
+/* Sequence diagram specific styles for fullscreen */
+.mermaid-fullscreen-container svg .actor,
+.mermaid-fullscreen-container svg rect.actor,
+.mermaid-fullscreen-container svg g.actor rect {
+    fill: #e1f5fe !important;
+    stroke: #0288d1 !important;
+}
+
+/* Note boxes in fullscreen */
+.mermaid-fullscreen-container svg .note,
+.mermaid-fullscreen-container svg rect.note,
+.mermaid-fullscreen-container svg g.note rect {
+    fill: #f6f8fa !important;
+    stroke: #d0d7de !important;
+}
+
+/* Activation boxes in fullscreen */
+.mermaid-fullscreen-container svg .activation0,
+.mermaid-fullscreen-container svg .activation1,
+.mermaid-fullscreen-container svg .activation2 {
+    fill: #e1f5fe !important;
+    stroke: #0288d1 !important;
+}
+
 .mermaid-fullscreen-close {
     position: absolute;
     top: 10px;
